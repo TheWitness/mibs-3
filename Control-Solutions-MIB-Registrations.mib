@@ -1,0 +1,61 @@
+Control-Solutions-MIB-Registrations 
+-- ******************************************************
+--Control Solutions, Inc., SNMP  MIB
+--Prefix for private enterprises:  1.3.6.1.4.1	
+--Control Solutions, Inc. private enterprize number:  3815
+--
+-- The following MIB is the registration tree for all Control Solutions products. 
+-- Products registered include:
+--	System 700/SNMP on BAS-700 hardware
+--  Babel Buster 10/100 Modbus to LonWorks gateway
+--
+--The following objects are implemented in the MIB-II System Group
+--
+--1.3.6.1.2.1.1.1	sysDescr
+--1.3.6.1.2.1.1.2	sysObjectID
+--1.3.6.1.2.1.1.3	sysUpTime
+--1.3.6.1.2.1.1.4	sysContact
+--1.3.6.1.2.1.1.5	sysName
+--1.3.6.1.2.1.1.6	sysLocation
+--1.3.6.1.2.1.1.7	sysServices
+--
+--
+--
+-- ************************************************************
+
+DEFINITIONS ::= BEGIN
+
+IMPORTS
+	enterprises
+		FROM RFC1155-SMI;
+
+-- Control Solutions, Inc. MIBs
+csi		OBJECT IDENTIFIER ::= { enterprises 3815 }	-- 1.3.6.1.4.1.3815
+
+-- Product MIB tree
+csiProduct	OBJECT IDENTIFIER ::= { csi 1 }			-- 3815.1
+
+-- Product Registration tree
+csiRegister	OBJECT IDENTIFIER ::= { csi 2 }			-- 3815.2
+
+-- Product group
+modbus	OBJECT IDENTIFIER ::= { csiProduct 2 }		-- 3815.1.2
+bacnet	OBJECT IDENTIFIER ::= { csiProduct 3 }		-- 3815.1.3
+
+-- Applications - base for product MIBs
+bb2-6010		OBJECT IDENTIFIER ::= { modbus 2 }      	-- 3815.1.2.2
+bb2-7010		OBJECT IDENTIFIER ::= { bacnet 1 }			-- 3815.1.3.1
+
+-- Product registration OID
+modbusReg		OBJECT IDENTIFIER ::= { csiRegister 2 }		-- 3815.2.2
+bacnetReg		OBJECT IDENTIFIER ::= { csiRegister 3 }		-- 3815.2.3
+
+-- Registration objects for sysObjectID
+bb2-6010-reg	OBJECT IDENTIFIER ::= { modbusReg 2 }   	-- 3815.2.2.2
+bb2-7010-reg	OBJECT IDENTIFIER ::= { bacnetReg 1 }		-- 3815.2.3.1
+
+-- Application MIB revision registrations
+bb2-6010-reg-v1		OBJECT IDENTIFIER ::= { bb2-6010-reg 1 }	-- 3815.2.2.2.1
+bb2-7010-reg-v1		OBJECT IDENTIFIER ::= { bb2-7010-reg 1 }	-- 3815.2.3.1.1
+	
+END
