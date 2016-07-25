@@ -1,0 +1,1166 @@
+-- *****************************************************************
+-- DASAN-NOTIFICATION.mib:  Dasan Enterprise Notifications
+--
+-- Copyright (c) 2001 by Dasan Co., Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+DASAN-NOTIFICATION DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY,
+	OBJECT-IDENTITY,
+	enterprises
+		FROM SNMPv2-SMI
+	dasanEvents
+		FROM DASAN-SMI
+	dsPortInstallStatus, dsPowerIndex, dsPowerstatus, dsFanIndex, dsFanstatus, dsSubnetConfName,
+	dsTemperatureStatus, dsSwitchAtMacAddress, dsSwitchAtNetAddress, dsSwitchAtVID,
+	dsUserMacAddress1, dsUserMacAddress2, dsUserMacAddress3, dsUserMacAddress4,
+	dsFreeMem, dsSystemUpgradePath, dsSystemUpgradeStorage, dsPortModuleIndex, dsPortPortIndex
+		FROM DASAN-SWITCH-MIB
+	dsUserLoginName, dsUserLoginIpAddress
+		FROM DASAN-USER-MANAGEMENT-MIB
+	dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonPortIndex,
+	dsPonDirection, dsPonState, dsPonCount, dsPonOltIndex, dsPonPortIndex
+		FROM DASAN-GEPON-MIB
+	ifIndex	FROM IF-MIB
+	sysDescr, sysUpTime FROM SNMPv2-MIB;
+	
+--
+--  Dasan Enterprise-Specific TRAP define 
+--  updated by dhlee@da-san.com 2003/03/07    
+--  moved from DASAN-SWITCH-MIB.my  
+--  updated by dhl@da-san.com   2004/06/10
+--
+
+portInstalled NOTIFICATION-TYPE
+    OBJECTS {
+       ifIndex,
+       dsPortInstallStatus
+    }
+    STATUS             current   
+    DESCRIPTION
+             "portI0nstalled trap send when portInstallStatus is enabled."
+    ::= { dasanEvents 1 }
+
+portRemoved   NOTIFICATION-TYPE
+     OBJECTS {
+         ifIndex ,
+         dsPortInstallStatus
+     }
+    STATUS             current    
+    DESCRIPTION
+             "portInstalled trap send when portInstallStatus is disabled."
+    ::= { dasanEvents 2 }                                         
+         
+powerOk NOTIFICATION-TYPE
+    OBJECTS {
+       dsPowerIndex,
+       dsPowerstatus 
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Power status OK trap when powerStatus change from disable to enable."
+    ::= { dasanEvents 3 }                                         
+    
+powerFail NOTIFICATION-TYPE
+    OBJECTS {
+       dsPowerIndex,
+       dsPowerstatus
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Power status fail trap when powerStatus change from enable to disable."
+    ::= { dasanEvents 4 }
+
+fanOk NOTIFICATION-TYPE
+    OBJECTS {
+       dsFanIndex,
+       dsFanstatus
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Fan status OK trap when fanStatus change from disable to enable."
+    ::= { dasanEvents 5 }
+         
+fanFail NOTIFICATION-TYPE
+    OBJECTS {
+       dsFanIndex,
+       dsFanstatus
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Fan status fail trap when fanStatus change from enable to disable."
+    ::= { dasanEvents 6 }                
+
+powerInstalled NOTIFICATION-TYPE
+    OBJECTS {
+       dsPowerIndex 
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Power Installed trap when power was installed."
+    ::= { dasanEvents 7 }                
+
+powerRemoved NOTIFICATION-TYPE
+    OBJECTS {
+       dsPowerIndex
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Power removed trap when power was removed."
+    ::= { dasanEvents 8 }                
+
+fanInstalled NOTIFICATION-TYPE
+    OBJECTS {
+       dsFanIndex 
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Fan Installed trap when fan was installed."
+    ::= { dasanEvents 9 }                
+
+fanRemoved NOTIFICATION-TYPE
+    OBJECTS {
+       dsFanIndex
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Fan removed trap when fan was removed."
+    ::= { dasanEvents 10 }
+   
+bcastOver   NOTIFICATION-TYPE
+    OBJECTS {
+       sysDescr
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Broadcast packet over trap when Rx broadcast packet is over the given limit."
+    ::= { dasanEvents 11 }
+    
+cpuLoadOverThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+       sysDescr
+    }
+    STATUS             current   
+    DESCRIPTION
+             "The cpuLoadOverThreshold trap is sent when cpuLoad is over the given limit."
+    ::= { dasanEvents 12 }
+    
+cpuLoadFallThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+       sysDescr
+    }
+    STATUS             current   
+    DESCRIPTION
+             "The cpuLoadfallThreshold trap is sent when cpuLoad fall under the given limit."
+    ::= { dasanEvents 13 }                       
+
+dhcpLeaseShortage	NOTIFICATION-TYPE
+	OBJECTS {
+         sysDescr,
+         dsSubnetConfName
+        }
+	STATUS             current   
+	DESCRIPTION	
+			"DHCP User IP pool shortage when User's DHCPDISCOVER message arrive."
+	::= { dasanEvents 14 } 
+	
+portOverThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+       ifIndex
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Port traffic over HighThreshold trap when port traffic is over the given limit."
+    ::= { dasanEvents 15 }
+    
+portFallThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+       ifIndex
+    }
+    STATUS             current   
+    DESCRIPTION
+             "Port traffic fall under HighThreshold trap when port traffic falls below the given limit."
+    ::= { dasanEvents 16 }                                     
+
+temperatureOverThreshold NOTIFICATION-TYPE
+	OBJECTS {
+         dsTemperatureStatus
+        }
+	STATUS             current   
+	DESCRIPTION
+			"TemperatureOverThreshold Trap is sent when temperature is over the certain threshold."
+	::= { dasanEvents 17 }
+
+systemRestart NOTIFICATION-TYPE
+	OBJECTS {
+         sysDescr
+        }
+	STATUS             current   
+	DESCRIPTION
+			"SystemRestart Trap is sent when system is restarted by user."
+	::= { dasanEvents 18 }                                
+	
+mfgdBlocked NOTIFICATION-TYPE
+	OBJECTS {
+         dsSwitchAtMacAddress,
+         dsSwitchAtNetAddress,
+         dsSwitchAtVID
+        }
+	STATUS             current   
+	DESCRIPTION
+			"mfgdblocked Trap is sent when a certain mac address is denied by mac-flood-guard mechanism." 
+    ::= { dasanEvents 19 }
+
+mfgdReleased NOTIFICATION-TYPE
+	OBJECTS {
+         dsSwitchAtMacAddress, 
+         dsSwitchAtNetAddress,
+         dsSwitchAtVID
+        }
+	STATUS             current   
+	DESCRIPTION
+			"mfgdReleased Trap is sent when a certain mac address is permitted again by mac-flood-guard mechanism." 
+    ::= { dasanEvents 20 }
+    
+ipConflict NOTIFICATION-TYPE
+	OBJECTS {
+        dsSwitchAtNetAddress,
+        dsSwitchAtMacAddress
+        }
+	STATUS             current   
+	DESCRIPTION
+			"ipConflict Trap is sent when a certain IP address is shared among different users." 
+    ::= { dasanEvents 21 }
+
+dhcpIllegalEntry NOTIFICATION-TYPE
+	OBJECTS {
+        dsSwitchAtNetAddress,
+        dsSwitchAtMacAddress,
+        ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"dhcpIllegalEntry trap is sent when illegal dhcp user is found." 
+    ::= { dasanEvents 22 }
+   
+optionModuleInstalled   NOTIFICATION-TYPE
+    OBJECTS {
+    		ifIndex
+    }
+    STATUS				current
+    DESCRIPTION
+             "optionModuleInstalled Trap is sent when option Module was installed."
+    ::= { dasanEvents 23 }
+ 
+optionModuleRemoved   NOTIFICATION-TYPE
+    OBJECTS {
+    		ifIndex
+    }
+    STATUS				current
+    DESCRIPTION
+             "optionModuleRemoved Trap is sent when option Module was removed."
+    ::= { dasanEvents 24 }
+ 
+memoryOverThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysDescr,
+    		dsFreeMem
+    }
+    STATUS				current
+    DESCRIPTION
+             "MemoryOverThreshold trap is sent when used memory size is over the given limit 
+             and free memory size falls below the given limit."
+    ::= { dasanEvents 25 }
+    
+memoryFallThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysDescr,
+    		dsFreeMem
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "MemoryFallThreshold trap is sent when free memory size is over the given limit."
+    ::= { dasanEvents 26 }                      
+
+slotInstalled   NOTIFICATION-TYPE
+    OBJECTS {
+    		ifIndex
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "slotInstalledTrap Trap is sent when Board was installed."
+    ::= { dasanEvents 27 }                      
+
+slotRemoved   NOTIFICATION-TYPE
+    OBJECTS {
+    		ifIndex
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "slotRemovedTrap Trap is sent when Board was removed."
+    ::= { dasanEvents 28 }                      
+
+slotStateChange   NOTIFICATION-TYPE
+    OBJECTS {
+    		ifIndex
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "slotStateChangeTrap Trap is sent when Board State change."
+    ::= { dasanEvents 29 }           
+
+portCRCOverThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+    		ifIndex
+  	    }
+    STATUS				current
+    DESCRIPTION
+             "portCRCOverThreshold Trap is sent when the CRC count of port overflowed."
+    ::= { dasanEvents 30 }                     
+
+portCRCFallThreshold   NOTIFICATION-TYPE
+    OBJECTS {
+    		ifIndex
+  	    }
+    STATUS				current
+    DESCRIPTION
+             "portCRCOverThreshold Trap is sent when the CRC count of port overflowed."
+    ::= { dasanEvents 31 }                     
+    
+--
+--  Newly Add traps related to temperature.
+--   
+
+temperatureHighOverThreshold  NOTIFICATION-TYPE
+	OBJECTS  { dsTemperatureStatus }
+	STATUS				current
+	DESCRIPTION
+			"The temperatureHighOverThreshold Trap is sent when temperature is over the high-threshold."
+	::= { dasanEvents 32 }
+
+temperatureHighFallThreshold  NOTIFICATION-TYPE
+	OBJECTS  { dsTemperatureStatus }
+	STATUS				current
+	DESCRIPTION
+			"The temperatureHighFallThreshold Trap is sent when temperature fall the high-threshold."
+	::= { dasanEvents 33 }
+
+temperatureLowOverThreshold NOTIFICATION-TYPE
+	OBJECTS  { dsTemperatureStatus } 
+	STATUS				current
+	DESCRIPTION
+			"The temperatureLowOverThreshold Trap is sent when 1st temperature is over the low-threshold."
+	::= { dasanEvents 34 }
+
+temperatureLowFallThreshold  NOTIFICATION-TYPE
+	OBJECTS  { dsTemperatureStatus }
+	STATUS				current
+	DESCRIPTION
+			"The temperatureLowFallThreshold Trap is sent when temperature fall under the low-threshold."
+	::= { dasanEvents 35 }      
+	
+userLogIn NOTIFICATION-TYPE
+	OBJECTS  { dsUserLoginName,	dsUserLoginIpAddress  }
+	STATUS				current
+	DESCRIPTION
+			"The user-login trap is sent when user login."
+	::= { dasanEvents 36 }      
+	
+userLogOut NOTIFICATION-TYPE
+	OBJECTS  { dsUserLoginName,	dsUserLoginIpAddress  }
+	STATUS				current
+	DESCRIPTION
+			"The user-logout trap is sent when user logout."
+	::= { dasanEvents 37 }   
+	
+restoreFactory NOTIFICATION-TYPE
+	OBJECTS  { sysDescr }
+	STATUS				current
+	DESCRIPTION
+			"The restoreFactory trap is sent when user initialize as factory defaults."
+	::= { dasanEvents 38 }
+	
+cpuLoadHighOverThreshold NOTIFICATION-TYPE
+	OBJECTS  { sysDescr }
+	STATUS				current
+	DESCRIPTION
+			"The cpuloadHighOverThreshold Trap is sent when temperature is over the high-threshold."
+	::= { dasanEvents 39 }
+
+cpuLoadHighFallThreshold NOTIFICATION-TYPE
+	OBJECTS  { sysDescr }
+	STATUS				current
+	DESCRIPTION
+			"The cpuloadHighFallThreshold Trap is sent when temperature fall the high-threshold."
+	::= { dasanEvents 40 }
+    
+cpuLoadLowOverThreshold NOTIFICATION-TYPE
+	OBJECTS  { sysDescr }
+	STATUS				current
+	DESCRIPTION
+			"The cpuloadLowOverThreshold Trap is sent when 1st temperature is over the low-threshold."
+	::= { dasanEvents 41 }
+
+cpuLoadLowFallThreshold NOTIFICATION-TYPE
+	OBJECTS  { sysDescr }
+	STATUS				current
+	DESCRIPTION
+			"The cpuloadLowFallThreshold Trap is sent when temperature fall under the low-threshold."
+	::= {dasanEvents 42 }     
+
+--  skip 43 for dsIgmpSnooping Notification	
+-- igmpSnoopingChanged NOTIFICATION-TYPE
+--    ::= {dasanEvents 43 }
+
+dsSystemUpgradeChanged NOTIFICATION-TYPE
+	OBJECTS  { sysDescr }
+	STATUS				current
+	DESCRIPTION
+			"System NOS Upgrade status"
+	::= {dasanEvents 44 }   
+
+	
+adslAtucPerfLofsThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Loss of Framing threshold reached(ATUC)."
+    ::= { dasanEvents 51 }                      
+
+adslAtucPerfLossThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Loss of signal threshold reached(ATUC)."
+    ::= { dasanEvents 52 }                      
+
+adslAtucPerfLprsThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Loss of power threshold reached (ATUC)."
+    ::= { dasanEvents 53 }                      
+
+adslAtucPerfESsThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Errored Seconds threshold reached (ATUC)."
+    ::= { dasanEvents 54 }                      
+
+adslAtucRateChange   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Changed atuc rate."
+    ::= { dasanEvents 55 }                      
+
+adslAtucPerfLolsThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Loss of Link threshold reached (ATUC)."
+    ::= { dasanEvents 56 }                      
+
+adslAturPerfLofsThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Loss of Framing threshold reached(ATUR)."
+    ::= { dasanEvents 61 }                      
+
+adslAturPerfLossThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Loss of signal threshold reached(ATUR)."
+    ::= { dasanEvents 62 }                      
+
+adslAturPerfLprsThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Loss of power threshold reached (ATUR)."
+    ::= { dasanEvents 63 }                      
+
+adslAturPerfESsThresh   NOTIFICATION-TYPE
+    OBJECTS {
+    		sysUpTime
+  	 }
+    STATUS				current
+    DESCRIPTION
+             "Errored Seconds threshold reached (ATUR)."
+    ::= { dasanEvents 64 }                      
+
+
+vdslCPEChangeInfoTrap NOTIFICATION-TYPE
+    OBJECTS   { sysDescr, ipAdEntAddr, dsVdslPortIndex, vdslPhysInvSerialNumber, dsUserMacAddress1, dsUserMacAddress2, dsUserMacAddress3, dsUserMacAddress4}
+    STATUS				current
+    DESCRIPTION
+			"Trap is sent with CPE Serial No., Mac Address of CPE, after CPE serial change.  "
+    ::= {dasanEvents 65 }
+    
+vdslArulePacketDropTrap NOTIFICATION-TYPE
+    OBJECTS   { sysUpTime }
+    STATUS				current
+    DESCRIPTION
+			"Packet Dropped by arule .  "
+    ::= {dasanEvents 66 }
+        
+        
+-- flood-guard (CPU|SYSTEM) 
+--
+cfgdBlocked NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"Cfgdblocked Trap is sent when a certain port is blocked by cpu-flood-guard mechanism." 
+    ::= { dasanEvents 71 }
+
+cfgdReleased NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"CfgdReleased Trap is sent when a certain port is non-blocked by cpu-flood-guard mechanism." 
+    ::= { dasanEvents 72 }
+    
+cfgdOverThreshold NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"." 
+    ::= { dasanEvents 73 }
+
+cfgdUnderThreshold NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"." 
+    ::= { dasanEvents 74 }
+
+	
+sfgdBlocked NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"Sfgdblocked Trap is sent when a certain port is blocked by system-flood-guard mechanism." 
+    ::= { dasanEvents 75 }
+
+sfgdReleased NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"SfgdReleased Trap is sent when a certain port is non-blocked by system-flood-guard mechanism." 
+    ::= { dasanEvents 76 }
+        
+	
+sfgdOverThreshold NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"." 
+    ::= { dasanEvents 77 }
+
+sfgdUnderThreshold NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"." 
+    ::= { dasanEvents 78 }
+
+ppsControlBlocked NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"PpsControlblocked Trap is sent when a certain port is blocked by PPS-Control mechanism." 
+    ::= { dasanEvents 79 }
+
+ppsControlReleased NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"PpsControlReleased Trap is sent when a certain port is non-blocked by PPS-Control mechanism." 
+    ::= { dasanEvents 80 }
+        
+	
+ppsControlOverThreshold NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"." 
+    ::= { dasanEvents 81 }
+
+ppsControlUnderThreshold NOTIFICATION-TYPE
+	OBJECTS {
+         ifIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"." 
+    ::= { dasanEvents 82 }
+
+--
+-- remote upgrade
+--
+
+nosRemoteUpgradeRequest NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr,
+  	    dsSystemUpgradePath,
+  	    dsSystemUpgradeStorage
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that the system received nos-remote-upgrade command."
+    ::= { dasanEvents 83 }
+
+nosRemoteUpgradeSuccess NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr,
+  	    dsSystemUpgradePath,
+  	    dsSystemUpgradeStorage
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that the NOS succeeded to upgrade NOS." 
+    ::= { dasanEvents 84 }
+
+
+nosRemoteUpgradeFailAbort NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr,
+  	    dsSystemUpgradePath,
+  	    dsSystemUpgradeStorage
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that the system failed to upgrade NOS by user interrupt" 
+    ::= { dasanEvents 85 }
+
+nosRemoteUpgradeFailHeaderError NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr,
+  	    dsSystemUpgradePath,
+  	    dsSystemUpgradeStorage
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that the system failed to upgrade NOS, for NOS header-error." 
+    ::= { dasanEvents 86 }
+
+nosRemoteUpgradeFailDownloadError NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr,
+  	    dsSystemUpgradePath,
+  	    dsSystemUpgradeStorage
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that the system failed to upgrade NOS, for NOS checksum-error" 
+    ::= { dasanEvents 87 }
+
+nosRemoteUpgradeFailFlashError NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr,
+  	    dsSystemUpgradePath,
+  	    dsSystemUpgradeStorage
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that the system failed to upgrade NOS, for flash operation" 
+    ::= { dasanEvents 88 }
+
+
+nosRemoteUpgradeStart NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr,
+  	    dsSystemUpgradePath,
+  	    dsSystemUpgradeStorage
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that the upgrade NOS process was started." 
+    ::= { dasanEvents 89 }
+
+-- Dying gasp for power fault 
+systemDyingGasp NOTIFICATION-TYPE
+	OBJECTS {
+	    sysDescr
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that Dying-gasp for power fault." 
+    ::= { dasanEvents 90 }
+
+-- Attack-Guard 
+attackGuardBlock NOTIFICATION-TYPE
+	OBJECTS {
+	    dsPortModuleIndex,
+	    dsPortPortIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that some port is blocked by attack-guard." 
+    ::= { dasanEvents 91 }
+
+attackGuardUnBlock NOTIFICATION-TYPE
+	OBJECTS {
+	    dsPortModuleIndex,
+	    dsPortPortIndex
+        }
+	STATUS             current   
+	DESCRIPTION
+			"This trap indicates that some port is unblocked by attack-guard." 
+    ::= { dasanEvents 92 }
+
+fanPeriodicFault NOTIFICATION-TYPE
+    OBJECTS {
+       dsFanIndex,
+       dsFanstatus
+    }
+    STATUS             current   
+    DESCRIPTION
+             "This trap indicates the fan status is fault in some period."
+    ::= { dasanEvents 93 }                
+
+remoteOamDyingGasp NOTIFICATION-TYPE
+    OBJECTS {
+	ifindex
+    }
+    STATUS             current   
+    DESCRIPTION
+             "This trap indicates the remote oam entity is in dying-gasp ."
+    ::= { dasanEvents 94 }                
+
+remoteOamDyingGaspRestoration NOTIFICATION-TYPE
+    OBJECTS {
+	ifindex
+    }
+    STATUS             current   
+    DESCRIPTION
+             "This trap indicates the remote oam entity is restored."
+    ::= { dasanEvents 95 }                
+
+arpInspectInvalid NOTIFICATION-TYPE
+    OBJECTS {
+	sleArpInspectInvalidLogReason, sleArpInspectInvalidLogSamePktCnt, sleArpInspectInvalidLogOpcode, sleArpInspectInvalidLogPortNumber, sleArpInspectInvalidLogVlanId,
+	sleArpInspectInvalidLogSrcMacAddr, sleArpInspectInvalidLogSrcIpAddr, sleArpInspectInvalidLogDstMacAddr, sleArpInspectInvalidLogDstIpAddr, sleArpInspectInvalidLogLastRecvTime
+    }
+    STATUS             current   
+    DESCRIPTION
+             "This trap indicates the ARP inspection is invalided."
+    ::= { dasanEvents 96 }                
+
+systemSwitchover NOTIFICATION-TYPE
+    OBJECTS {
+        sysDescr
+    }
+    STATUS             current
+    DESCRIPTION
+             "This trap indicates the system is switchover."
+    ::= { dasanEvents 97 }
+
+boardChangeState NOTIFICATION-TYPE
+    OBJECTS {
+        sleRedActiveBoard, sleRedActivePrevState, sleRedActiveCurrState
+    }
+    STATUS             current
+    DESCRIPTION
+             "This trap indicates the board state is changed."
+    ::= { dasanEvents 98 }
+
+clockModuleInstalled NOTIFICATION-TYPE
+    OBJECTS {
+        sleClockModuleIndex, sleClockModuleBoardId, sleClockModuleInstallStatus
+    }
+    STATUS             current
+    DESCRIPTION
+             "clockModuleInstalled trap send when sleClockModuleInstallStatus is installed."
+    ::= { dasanEvents 99 }
+
+clockModuleRemoved NOTIFICATION-TYPE
+    OBJECTS {
+        sleClockModuleIndex, sleClockModuleBoardId, sleClockModuleInstallStatus
+    }
+    STATUS             current
+    DESCRIPTION
+             "clockModuleRemoved trap send when sleClockModuleInstallStatus is removed."
+    ::= { dasanEvents 100 }
+
+clockModuleInitOk NOTIFICATION-TYPE
+    OBJECTS {
+        sleClockModuleIndex, sleClockModuleBoardId, sleClockModuleInitStatus
+    }
+    STATUS             current
+    DESCRIPTION
+             "clockModuleInitOk trap send when sleClockModuleInitStatus is ok."
+    ::= { dasanEvents 101 }
+
+clockModuleInitFail NOTIFICATION-TYPE
+    OBJECTS {
+        sleClockModuleIndex, sleClockModuleBoardId, sleClockModuleInitStatus
+    }
+    STATUS             current
+    DESCRIPTION
+             "clockModuleInitFail trap send when sleClockModuleInitStatus is failure."
+    ::= { dasanEvents 102 }
+
+
+--
+-- 100, 101 reserved as SLE
+--  
+
+
+--GE-PON
+ponLinkFault	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"ONU reports a Link Fault via the flag in the 802.3ah OAM header.No further information about the fault is available.."
+    		::= { dasanEvents 151 }
+
+ponLos		NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"Loss of Signal is detected by the PHY device for OLT Network  interface, and PON interfaces on  the OLT and ONU."
+    		::= { dasanEvents 152 }
+
+ponTransmitFail	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"Transmitted output does not match input, as reported by EPON optics."
+    		::= { dasanEvents 153 }
+
+ponTransmitDegrade	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"Transmitted output has a high error level, but not so high as to cause - Failure. Optionallyreported by EPON optical module."
+   			::= { dasanEvents 154 }
+
+ponQueueOverflow	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"One of the queues for the link has dropped frames due to becoming full."
+    		::= { dasanEvents 155 }
+
+ponMacLearningTableOverflow	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"MAC address learning table is full, not in overwrite mode, and a new MAC address wasencountered."
+    		::= { dasanEvents 156 }
+
+ponDuplicateMacRegistration	NOTIFICATION-TYPE
+ 			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}	
+			STATUS	current
+   			DESCRIPTION	"MPCP register request received for MAC that is registered and in-service."
+   			::= { dasanEvents 157 }
+
+ponReportTimeout	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"ONU does not respond to grants from the OLT."
+   			::= { dasanEvents 158 }
+
+ponGateTimeout	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"Excessive interval between MPCP gates."
+    		::= { dasanEvents 159 }
+
+ponOAMKeepaliveTimeout	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+			DESCRIPTION	"OAM KeepaliveTimeout - OAM layer does not receive periodic messages from its peer."
+   			::= { dasanEvents 160 }
+
+ponKeyExchangeFailure	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"The link peer has failed to generate a new key message, or to switch to the new key, in the timeallotted by the key exchange timer for this link. Encryption remains in force using the old key, and the key exchange process continues.The alarm will clear when a new key is established."
+   			::= { dasanEvents 161 }
+
+ponAutoNegotiation	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+   			DESCRIPTION	"OLT Network port fails to auto-negotiate with the peer (if auto-negotiation feature is enabled)."
+   			::= { dasanEvents 162 }
+
+ponLinkLoopback	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"The link is currently in the loopback state."
+    		::= { dasanEvents 163 }
+
+ponStandardDyingGasp	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"ONU reports Dying Gasp via that bit in 802.3ah OAM header."
+   			::= { dasanEvents 164 }
+
+ponPowerFail	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"Power supply failure."
+    		::= { dasanEvents 165 }
+
+ponTemperature	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"Operating temperature range exceeded."
+    		::= { dasanEvents 166 }
+
+ponAuthenticationInformationUnavailable	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"ONU is configured to use external authentication device, and that device is not present."
+    		::= { dasanEvents 167 }
+
+ponOctetsTransferred	NOTIFICATION-TYPE
+			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+    		DESCRIPTION	"Octets Transferred."
+   			::= { dasanEvents 171 }
+
+ponTotalFramesTransferred	NOTIFICATION-TYPE
+			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+			STATUS	current
+    		DESCRIPTION	"Total frames transferred."
+			::= { dasanEvents 172 }
+
+ponUnicastFramesTransferred	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+			STATUS	current
+    		DESCRIPTION	"Unicast frames transferred."
+			::= { dasanEvents 173 }
+
+ponBroadcastFramesTransferred	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+			STATUS	current
+    		DESCRIPTION	"Broadcast frames transferred."
+			::= { dasanEvents 174 }
+
+ponMulticastFramesTransferred	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+			STATUS	current
+    		DESCRIPTION	"Multicast frames transferred."
+			::= { dasanEvents 175 }
+
+ponCRC32Errors	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"CRC-32 Errors."
+    		::= { dasanEvents 176 }
+
+ponUndersizeFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"Undersize Frames."
+    		::= { dasanEvents 177 }
+
+ponOversizeFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"Oversize Frames."
+    		::= { dasanEvents 178 }
+
+ponCollisions	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"Collisions."
+    		::= { dasanEvents 179 }
+
+pon64OctetFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"64 Octet Frames."
+    		::= { dasanEvents 180 }
+
+pon127OctetFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"65-127 Octet Frames."
+    		::= { dasanEvents 181 }
+
+pon255OctetFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"128-255 Octet Frames."
+    		::= { dasanEvents 182 }
+
+pon511OctetFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"256-511 Octet Frames."
+    		::= { dasanEvents 183 }
+
+pon1023OctetFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"512-1023 Octet Frames."
+	    		::= { dasanEvents 184 }
+
+pon1518OctetFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"1024-1518 Octet Frames."
+    		::= { dasanEvents 185 }
+
+pon1519OverOctetFrames	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"1519+ Octet Frames."
+    		::= { dasanEvents 186 }
+
+ponFramesDropped	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"Frames dropped."
+    		::= { dasanEvents 187 }
+
+ponOctetsDropped	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"Octets dropped."
+    		::= { dasanEvents 188 }
+
+ponOctetsDelayed	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"Octets delayed."
+    		::= { dasanEvents 189 }
+
+ponOctetsGranted	NOTIFICATION-TYPE
+   			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+   			STATUS	current
+   			DESCRIPTION	"Octets granted."
+   			::= { dasanEvents 190 }
+
+ponOctetsGrantedButUnused	NOTIFICATION-TYPE
+			OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+			STATUS	current
+    		DESCRIPTION	"Octets granted but unused."
+			::= { dasanEvents 191 }
+
+ponMaximumDelay	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"Maximum Delay (units of 100usec)."
+    		::= { dasanEvents 192 }
+
+ponCRC8Errors	NOTIFICATION-TYPE
+    		OBJECTS {dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount}
+    		STATUS	current
+    		DESCRIPTION	"CRC-8 (preamble) Errors."
+    		::= { dasanEvents 193 }
+
+ponLineCodeErrors  NOTIFICATION-TYPE
+    		OBJECTS { dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonPortIndex, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount }
+    		STATUS	current
+    		DESCRIPTION " Line code errors "
+    		::= { dasanEvents 194 }
+
+ponPauseFrames  NOTIFICATION-TYPE
+    		OBJECTS { dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonPortIndex, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount }
+    		STATUS	current
+    		DESCRIPTION " Pause Frames "
+    		::= { dasanEvents 195 }
+
+ponErroredFrameSeconds  NOTIFICATION-TYPE
+    		OBJECTS { dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonPortIndex, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount }
+    		STATUS	current
+    		DESCRIPTION " Errored Frame Seconds "
+    		::= { dasanEvents 196 }
+
+ponErroredFramePeriod  NOTIFICATION-TYPE
+    		OBJECTS { dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonPortIndex, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount }
+    		STATUS	current
+    		DESCRIPTION " Errored Frame Period "
+    		::= { dasanEvents 197 }
+
+ponErroredFrameSecondsSummary  NOTIFICATION-TYPE
+    		OBJECTS { dsPonOltIndex, dsPonOnuIndex, dsPonOnuMacAddress, dsPonTaggedLabel, dsPonPortIndex, dsPonQueueIndex, dsPonDirection, dsPonState, dsPonCount }
+    		STATUS	current
+    		DESCRIPTION " Errored Frame Seconds Summary "
+    		::= { dasanEvents 198 }
+
+gponOnuRegistered  NOTIFICATION-TYPE
+    		OBJECTS { sysDescr, sleAgentAddress, sleGponOltId, sleGponOnuId, sleGponOnuSerial, sleGponOnuIsFirst }
+    		STATUS	current
+    		DESCRIPTION " Registered Onu Informations "
+    		::= { dasanEvents 200 }
+
+gponOnuDeregistered  NOTIFICATION-TYPE
+    		OBJECTS { sysDescr, sleAgentAddress, sleGponOltId, sleGponOnuId, sleGponOnuSerial }
+    		STATUS	current
+    		DESCRIPTION " Deregistered Onu Informations "
+    		::= { dasanEvents 201 }
+
+swWatchdogDetectError  NOTIFICATION-TYPE
+    		OBJECTS { sleSwWatchdogType }
+    		STATUS	current
+    		DESCRIPTION " S/W Watchdog Detect Error "
+    		::= { dasanEvents 202 }
+
+swWatchdogClearError  NOTIFICATION-TYPE
+    		OBJECTS { sleSwWatchdogType }
+    		STATUS	current
+    		DESCRIPTION " S/W Watchdog Clear Error "
+    		::= { dasanEvents 203 }
+
+swWatchdogNormalState  NOTIFICATION-TYPE
+    		OBJECTS { sleSwWatchdogType }
+    		STATUS	current
+    		DESCRIPTION " S/W Watchdog Normal State "
+    		::= { dasanEvents 204 }
+
+swWatchdogAbnomalState  NOTIFICATION-TYPE
+    		OBJECTS { sleSwWatchdogType }
+    		STATUS	current
+    		DESCRIPTION " S/W Watchdog Abnormal State "
+    		::= { dasanEvents 205 }
+             
+END
